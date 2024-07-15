@@ -1,0 +1,12 @@
+[Unit]
+Description=Run stream.sh after audio task is ready
+Requires=sound.target
+
+[Service]
+Type=simple
+ExecStart=/home/pidio/stream.sh
+WorkingDirectory=/home/pidio/
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

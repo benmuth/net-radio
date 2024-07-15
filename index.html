@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>net-radio</title>
+    <style>
+        body {
+            background: black;
+            color: #00ff00;
+            font-family: monospace;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        input {
+            background: black;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            margin-right: 10px;
+        }
+        #content {
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h2>net-radio server</h2>
+    <div id="content"></div>
+    <form method="post" action="/submit">
+        <label for="station">station:</label>
+        <input type="text" id="station" name="station">
+        <input type="submit" value="Submit">
+    </form>
+    <script>
+        function updateContent() {
+            fetch('/get_station')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('content').textContent = data;
+                });
+        }
+        updateContent();
+        setInterval(updateContent, 5000);
+    </script>
+</body>
+</html>
+

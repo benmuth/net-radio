@@ -1,0 +1,13 @@
+[Unit]
+Description=Run net-radio server after stream is playing
+Requires=stream.service
+
+[Service]
+Type=simple
+ExecStart=/home/pidio/server.sh
+WorkingDirectory=/home/pidio/
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
