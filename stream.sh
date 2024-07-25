@@ -5,6 +5,11 @@ UNMUTE_PIN=17
 
 function start_stream() {
 	ffplay -nodisp -autoexit "$STREAM_URL" >/dev/null 2>&1 &
+
+	# this is slower but will work with many more urls. ideally should just be
+	# used as a fallback
+	# ffplay -nodisp -autoexit "$(yt-dlp --get-url "$STREAM_URL")" >/dev/null 2>&1 &
+
 	echo "Stream started"
 }
 
@@ -12,6 +17,9 @@ function stop_stream() {
 	pkill ffplay
 	echo "Stream stopped"
 }
+
+# when ffplay fails (exits with non-0 code), could run ffplay "$(yt-dlp --get-url <stream-url>)”
+# alternatively, should run that every time, but it's slow
 
 # Main loop
 while true; do
