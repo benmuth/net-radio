@@ -4,11 +4,7 @@ STATION_FILE="station.txt"
 UNMUTE_PIN=17
 
 function start_stream() {
-	ffplay -nodisp -autoexit "$STREAM_URL" >/dev/null 2>&1 &
-
-	# this is slower but will work with many more urls. ideally should just be
-	# used as a fallback
-	# ffplay -nodisp -autoexit "$(yt-dlp --get-url "$STREAM_URL")" >/dev/null 2>&1 &
+	$(ffplay -nodisp -autoexit "$STREAM_URL" >/dev/null 2>&1) || $(ffplay -nodisp -autoexit "$(yt-dlp --get-url "$STREAM_URL")" >/dev/null 2>&1) &
 
 	echo "Stream started"
 }
