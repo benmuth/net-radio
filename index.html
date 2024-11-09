@@ -32,9 +32,12 @@
     <h2>net-radio server</h2>
     <div id="content"></div>
     <form method="post" action="/submit">
-        <label for="station">station:</label>
+        <label for="station">add station:</label>
         <input type="text" id="station" name="station">
         <input type="submit" value="Submit">
+    </form>
+    <form method="post" action="/next">
+      <input type="submit" value="Next Station">
     </form>
     <script>
         function updateContent() {

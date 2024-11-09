@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# this script streams (with ffplay) the first line found in station.txt
 STATION_FILE="station.txt"
 UNMUTE_PIN=17
 
@@ -23,7 +24,7 @@ while true; do
 	STATE=$(gpioget 0 $UNMUTE_PIN)
 
 	OLD_URL=$STREAM_URL
-	STREAM_URL=$(cat "$STATION_FILE")
+	STREAM_URL=$(head -n 1 "$STATION_FILE")
 
 	if [[ "$OLD_URL" != "$STREAM_URL" ]]; then
 		stop_stream
