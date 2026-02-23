@@ -1,0 +1,19 @@
+#!/bin/bash
+# Mock gpioget for VM testing
+# Reads GPIO state from ~/.gpio-mock/<pin> files
+# Usage: gpioget <chip> <pin>  (chip is ignored)
+
+PIN="$2"
+MOCK_DIR="$HOME/.gpio-mock"
+FILE="$MOCK_DIR/$PIN"
+
+if [[ -f "$FILE" ]]; then
+    cat "$FILE"
+else
+    # Defaults: pin 17 (unmute) = 1, pin 27 (button) = 0
+    if [[ "$PIN" == "17" ]]; then
+        echo "1"
+    else
+        echo "0"
+    fi
+fi
