@@ -42,10 +42,14 @@ sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o
 sudo chmod a+rx /usr/local/bin/yt-dlp
 ```
 
-Install Go (for building the server):
+Install Go 1.22+ (required for HTTP route syntax):
 
 ```bash
-sudo apt install golang
+# Debian/Ubuntu package may be too old; install from official release:
+curl -LO https://go.dev/dl/go1.22.0.linux-arm64.tar.gz  # or amd64
+sudo rm -rf /usr/local/go
+sudo tar -C /usr/local -xzf go1.22.0.linux-arm64.tar.gz
+export PATH=/usr/local/go/bin:$PATH
 ```
 
 ## Installation
@@ -112,46 +116,111 @@ Stations are stored in `station.txt`, one URL per line. The first line is the cu
 │   ├── stream.service
 │   ├── server.service
 │   └── button.service
-└── test/           # VM testing utilities
+└── test/
     ├── gpioget         # Mock gpioget script
-    ├── setup-vm.sh     # VM setup script
-    └── press-button.sh # Simulate button press
+    ├── setup-vm.sh     # Local mock GPIO setup
+    ├── press-button.sh # Simulate button press
+    └── vm/             # QEMU VM testing
+        ├── fetch-image.sh  # Download Debian cloud image
+        ├── make-seed.sh    # Create cloud-init config
+        ├── start-vm.sh     # Start VM
+        ├── stop-vm.sh      # Stop VM
+        ├── ssh-vm.sh       # SSH into VM
+        └── copy-project.sh # Copy project to VM
 ```
 
-## VM Testing
+## Testing
 
-For testing without hardware, use the mock GPIO setup:
+### Option 1: Local Mock GPIO
 
-1. Run the setup script:
-   ```bash
-   ./test/setup-vm.sh
-   ```
+For quick testing on your dev machine:
 
-2. Ensure `~/.local/bin` is in your PATH:
-   ```bash
-   export PATH="$HOME/.local/bin:$PATH"
-   ```
+```bash
+./test/setup-vm.sh
+export PATH="$HOME/.local/bin:$PATH"
+./stream.sh &
+./nr-server &
+./button.sh &
 
-3. Start the services:
-   ```bash
-   ./stream.sh &
-   ./nr-server &
-   ./button.sh &
-   ```
+# Simulate button press
+./test/press-button.sh
+```
 
-4. Control via mock GPIO:
-   ```bash
-   # Simulate button press
-   ./test/press-button.sh
+### Option 2: QEMU VM (Cross-Platform)
 
-   # Mute audio
-   echo 0 > ~/.gpio-mock/17
+Full Linux VM testing with Debian cloud image. Uses cloud-init for automated setup including mock GPIO, ffmpeg, and curl. Requires QEMU:
 
-   # Unmute audio
-   echo 1 > ~/.gpio-mock/17
-   ```
+```bash
+# macOS
+brew install qemu
+
+# Debian/Ubuntu
+sudo apt install qemu-system
+```
+
+**Initial setup:**
+
+```bash
+cd test/vm
+./fetch-image.sh    # Download Debian cloud image (~350MB)
+./make-seed.sh      # Create cloud-init ISO with your SSH key
+./start-vm.sh       # Start VM in background
+```
+
+Wait 60-90 seconds for first boot (cloud-init installs packages).
+
+**Port forwarding:**
+- `localhost:2222` → VM SSH (port 22)
+- `localhost:8080` → VM HTTP (port 80)
+
+**Copy project and run:**
+
+```bash
+# Copy files to VM
+scp -P 2222 *.go *.sh *.html user@localhost:~/net-radio/
+
+# SSH in
+./ssh-vm.sh
+
+# Inside VM: install Go 1.22 (Debian 12 ships 1.19, too old)
+curl -LO https://go.dev/dl/go1.22.0.linux-arm64.tar.gz
+sudo tar -C /usr/local -xzf go1.22.0.linux-arm64.tar.gz
+export PATH=/usr/local/go/bin:$PATH
+
+# Build and run
+cd ~/net-radio
+sudo mkdir -p /home/pidio && sudo cp index.html /home/pidio/
+go build -o nr-server nr-server.go
+sudo setcap CAP_NET_BIND_SERVICE=+eip ./nr-server
+echo "http://stream.live.vc.bbcmedia.co.uk/bbc_radio_one" > station.txt
+./nr-server &
+```
+
+**Access from host:** `http://localhost:8080`
+
+**Stop VM:**
+
+```bash
+./stop-vm.sh
+```
+
+**Notes:**
+- Go 1.22+ required (uses `GET /` route syntax added in 1.22)
+- Server expects `index.html` at `/home/pidio/index.html` (hardcoded)
+- Mock `gpioget` is installed at `/usr/local/bin/gpioget` by cloud-init
+- GPIO state files: `~/.gpio-mock/17` (unmute), `~/.gpio-mock/27` (button)
 
 ## Troubleshooting
+
+**VM: Server returns 404:**
+- Ensure Go 1.22+ is installed (`go version`). The `GET /` route syntax requires 1.22+.
+- Debian 12 ships Go 1.19; install from https://go.dev/dl/
+
+**VM: "permission denied" on port 80:**
+- Run: `sudo setcap CAP_NET_BIND_SERVICE=+eip ./nr-server`
+
+**VM: "index.html: no such file or directory":**
+- Server expects `/home/pidio/index.html`. Create with: `sudo mkdir -p /home/pidio && sudo cp index.html /home/pidio/`
 
 **No audio output:**
 - Check that GPIO 17 is correctly connected for unmute control

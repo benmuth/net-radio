@@ -1,0 +1,45 @@
+#cloud-config
+
+hostname: netradio-vm
+
+users:
+  - name: user
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - SSH_PUBKEY_PLACEHOLDER
+
+package_update: true
+packages:
+  - ffmpeg
+  - curl
+  - golang
+  - git
+
+write_files:
+  - path: /usr/local/bin/gpioget
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      PIN="$2"
+      MOCK_DIR="$HOME/.gpio-mock"
+      FILE="$MOCK_DIR/$PIN"
+      if [[ -f "$FILE" ]]; then
+          cat "$FILE"
+      else
+          if [[ "$PIN" == "17" ]]; then echo "1"; else echo "0"; fi
+      fi
+
+  - path: /home/user/setup-netradio.sh
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      set -e
+      mkdir -p ~/.gpio-mock
+      echo "1" > ~/.gpio-mock/17
+      echo "0" > ~/.gpio-mock/27
+      echo "net-radio VM ready. Mount or copy project to /home/user/net-radio"
+
+runcmd:
+  - chown -R user:user /home/user
+  - su - user -c "/home/user/setup-netradio.sh"

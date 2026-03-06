@@ -1,0 +1,6 @@
+# Downloaded/generated files
+*.qcow2
+*.iso
+vm.pid
+vm.log
+user-data.tmp
