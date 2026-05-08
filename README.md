@@ -137,7 +137,6 @@ For quick testing on your dev machine:
 
 ```bash
 ./test/setup-vm.sh
-export PATH="$HOME/.local/bin:$PATH"
 ./stream.sh &
 ./nr-server &
 ./button.sh &
@@ -208,7 +207,7 @@ echo "http://stream.live.vc.bbcmedia.co.uk/bbc_radio_one" > station.txt
 - Go 1.22+ required (uses `GET /` route syntax added in 1.22)
 - Server expects `index.html` at `/home/pidio/index.html` (hardcoded)
 - Mock `gpioget` is installed at `/usr/local/bin/gpioget` by cloud-init
-- GPIO state files: `~/.gpio-mock/17` (unmute), `~/.gpio-mock/27` (button)
+- GPIO state files: `test/mock-gpio/17` (unmute), `test/mock-gpio/27` (button)
 
 ## Troubleshooting
 

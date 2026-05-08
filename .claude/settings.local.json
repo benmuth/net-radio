@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/Users/bert/code/net-radio/test/vm/ssh-vm.sh:*)",
+      "Bash(curl:*)"
+    ]
+  }
+}

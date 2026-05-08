@@ -10,7 +10,7 @@ import (
 const (
 	stationFile = "station.txt"
 	// htmlFile    = "index.html"
-	htmlFile = "/home/pidio/index.html"
+	htmlFile = "index.html"
 	port     = 80
 )
 

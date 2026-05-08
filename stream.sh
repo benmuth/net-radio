@@ -1,6 +1,7 @@
 #!/bin/bash
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+GPIOMOCK="$SCRIPT_DIR/test/gpioget"
 
-# this script streams (with ffplay) the first line found in station.txt
 STATION_FILE="station.txt"
 UNMUTE_PIN=17
 
@@ -15,13 +16,9 @@ function stop_stream() {
 	echo "Stream stopped"
 }
 
-# when ffplay fails (exits with non-0 code), could run ffplay "$(yt-dlp --get-url <stream-url>)”
-# alternatively, should run that every time, but it's slow
-
 # Main loop
 while true; do
-	# TODO: change this command based on machine
-	STATE=$(gpioget 0 $UNMUTE_PIN)
+	STATE=$("$GPIOMOCK" 0 $UNMUTE_PIN)
 
 	OLD_URL=$STREAM_URL
 	STREAM_URL=$(head -n 1 "$STATION_FILE")
@@ -40,11 +37,8 @@ while true; do
 			stop_stream
 		fi
 	else
-		echo "Invalid state in $PIN_FILE. Use 1 to start or 0 to stop."
+		echo "Invalid state in gpio pin $UNMUTE_PIN. Use 1 to start or 0 to stop."
 	fi
-
-	# stop_stream doesn't run if stream.sh is manually killed
-	# TODO: catch CTRL+C
 
 	sleep 0.1
 done

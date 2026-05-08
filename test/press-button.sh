@@ -1,6 +1,7 @@
 #!/bin/bash
 # Simulate a button press on GPIO 27
-MOCK_DIR="$HOME/.gpio-mock"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+MOCK_DIR="$SCRIPT_DIR/mock-gpio"
 
 echo "1" > "$MOCK_DIR/27"
 sleep 0.3

@@ -22,7 +22,7 @@ write_files:
     content: |
       #!/bin/bash
       PIN="$2"
-      MOCK_DIR="$HOME/.gpio-mock"
+      MOCK_DIR="$HOME/net-radio/test/mock-gpio"
       FILE="$MOCK_DIR/$PIN"
       if [[ -f "$FILE" ]]; then
           cat "$FILE"
@@ -35,11 +35,13 @@ write_files:
     content: |
       #!/bin/bash
       set -e
-      mkdir -p ~/.gpio-mock
-      echo "1" > ~/.gpio-mock/17
-      echo "0" > ~/.gpio-mock/27
-      echo "net-radio VM ready. Mount or copy project to /home/user/net-radio"
+      mkdir -p ~/net-radio/test/mock-gpio
+      echo "1" > ~/net-radio/test/mock-gpio/17
+      echo "0" > ~/net-radio/test/mock-gpio/27
+      echo "net-radio VM ready. Copy project to /home/user/net-radio"
 
 runcmd:
+  - mkdir -p /home/user/net-radio/test/mock-gpio
+  - echo "1" > /home/user/net-radio/test/mock-gpio/17
+  - echo "0" > /home/user/net-radio/test/mock-gpio/27
   - chown -R user:user /home/user
-  - su - user -c "/home/user/setup-netradio.sh"
